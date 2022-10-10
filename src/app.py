@@ -8,16 +8,27 @@ from boardMaker import board_heat, df_to_perc
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1('All moves in Hans Niemann carrer'),
-    dcc.Graph(id="graph"),
-    html.P("Color:"),
-    dcc.RadioItems(
-        id='color',
-        options=['black', 'white', 'both'],
-        value='both')
+    html.Div(
+        className="app-header",
+        children=[
+            html.H1('Hans Niemann\'s Square Frequency', className="app-header--title")
+        ]
+    ),
+    html.Div(className='body-class', 
+    children = [
+        dcc.Graph(id="graph"),
+        html.H4("Color:"),
+        dcc.RadioItems(
+            id='color',
+            className='radio-class',
+            options=['Black', 'White', 'Both'],
+            value='Both'
+            )
+        ]
+    )
 ])
 
-pgn = open("niemann_yottabase.pgn")
+pgn = open("src/niemann_yottabase.pgn")
 black = []
 white = []
 tmp = chess.pgn.read_game(pgn)
@@ -40,8 +51,8 @@ df = df_to_perc(df)
 df2 = df_to_perc(df2)
 df3 = df_to_perc(df3)
 
-df = df.assign(color = ["white", "white","white","white","white","white","white","white"])
-df2 = df2.assign(color = ["black", "black", "black","black","black","black","black","black"])
+df = df.assign(color = ["White", "White","White","White","White","White","White","White"])
+df2 = df2.assign(color = ["Black", "Black", "Black","Black","Black","Black","Black","Black"])
 df = pd.concat([df, df2])
 
 @app.callback(
@@ -50,7 +61,7 @@ df = pd.concat([df, df2])
 def filter_heatmap(value):
     temp1 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     temp2 = ['8', '7', '6', '5', '4', '3', '2', '1']
-    if value == "both":
+    if value == "Both":
         fig = px.imshow(df3, text_auto=True, labels=dict(color="%"),
                 x=temp1,
                 y=temp2)

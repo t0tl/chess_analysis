@@ -11,7 +11,7 @@ dictionary = {"a" : 1,
 }
 
 def df_to_perc(df):
-    return round(df.divide(df.to_numpy().sum())*100, ndigits=0)
+    return round(df.divide(df.to_numpy().sum())*100, ndigits=1)
 
 def char_to_num(char):
     return dictionary[char]

@@ -1,7 +1,11 @@
-# chess_analysis
+# Chess Analysis
 A repository collecting, analysing, and visualising Hans Niemanns chess games
 
-## Getting started
+### A 'Dash' of an Interactive Heatmap
+The plotly heatmap shows the likelihood of Hans moving any of his pieces to one the squares. One can further choose to segment on only his games as white or black.
+![](README_ASSETS\hans_niemann_square_frequency.png)
+
+## Getting started with the repo
 To use the repository, you need to have the an chess engine downloaded. For this project, I have used Stockfish 15 which can be downloaded from [Stockfish](https://stockfishchess.org/).
 
 You also might need to install some dependecies using the following command:

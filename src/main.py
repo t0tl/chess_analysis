@@ -2,15 +2,16 @@ import chess.pgn
 import chess.engine
 import multiprocessing as mp
 import sys
+import psycopg2
 import re
-
-# Future improvement could be to get the 
-# move by move evaluation and run unsupervised methods (random forest, clustering)
-# to see if there are time periods where Niemann engaged in cheating.
-
-lst = []
+from config import config
 
 def game_eval(game, color):
+    '''
+    A function which analyses each move Hans Niemann
+    played (excluding the first 8 moves) and 
+    returns his accuracy for the game
+    '''
     engine = chess.engine.SimpleEngine.popen_uci(r".\stockfish_15_win_x64_avx2\stockfish_15_x64_avx2.exe")
     board = game.board()
     sum_moves = 0
@@ -44,17 +45,20 @@ def game_eval(game, color):
     engine.quit()
     return (game.headers['EventDate'], game.headers['White'], game.headers['Black'], accuracy, game.headers['PlyCount'])
 
-def list_updater(res):
-    print(res)
-    lst.append(res[3])
-    return lst
-
-def printer(err):
-    print(err)
+def db_insert(res):
+    '''
+    Retrieves return values from game_eval and 
+    inserts into a postgres database.
+    '''
+    try:
+        cur.execute('''INSERT INTO niemann(event_date, white, black, accuracy, n_moves) VALUES(%s,%s,%s,%s,%s);''', res)
+        conn.commit()
+    except (Exception, psycopg2.DatabaseError) as err:
+        print(err)
 
 def analyse(game_list, color):
     '''
-    Analyses each game asynchronously using Stockfish.
+    Analyses each game asynchronously by calling game_eval.
     Returns a list of accuracy scores for each game.
 
     Takes game_list which is a list of type Game
@@ -63,7 +67,7 @@ def analyse(game_list, color):
     '''
     nprocs = mp.cpu_count()
     pool = mp.Pool(processes=nprocs) 
-    r1 = [pool.apply_async(func = game_eval, args=(game, color), callback = list_updater, error_callback=printer) for game in game_list]
+    r1 = [pool.apply_async(func = game_eval, args=(game, color), callback = lambda res: db_insert(res), error_callback=print) for game in game_list]
     for r in r1:
         r.wait()
     pool.close()
@@ -72,24 +76,43 @@ def analyse(game_list, color):
 
 if __name__ == "__main__":
     sys.setrecursionlimit(2000)
+    
+    # Get the db params from config.py
+    params = config()
+
+    # connect to the PostgreSQL server
+    print('Connecting to the PostgreSQL database...')
+    conn = psycopg2.connect(**params)
+    conn.autocommit = True
+
+    # create a cursor
+    cur = conn.cursor()
 
     pgn = open("niemann_yottabase.pgn")
     black = []
     white = []
     tmp = chess.pgn.read_game(pgn)
-    rgx = re.compile(r"(\d+(\.\d{2})+(\.\d{2}))")
+    # Regex which checks for date using format yyyy.mm.dd
+    rgx = re.compile(r"(\d+(\.\d{2})+(\.\d{2}))") 
     while(tmp is not None):
+
         if (re.match(rgx, tmp.headers["EventDate"]) is None):
             tmp.headers["EventDate"] = "1111.11.11"
-        if (int(tmp.headers["PlyCount"]) < 60): # Only select games with more than 30 moves.
+
+            # Only select games with more than 30 moves.
+        if (int(tmp.headers["PlyCount"]) < 60): 
             tmp = chess.pgn.read_game(pgn)
             continue
+
         if tmp.headers["White"] == "Niemann, Hans Moke":
             white.append(tmp)
+
         else:
             black.append(tmp)
-        tmp = chess.pgn.read_game(pgn)
-    white_list = analyse(white, "White")
-    lst = []
-    black_list = analyse(black, "Black")
 
+        tmp = chess.pgn.read_game(pgn)
+        
+    analyse(white, "White")
+    analyse(black, "Black")
+    cur.close()
+    conn.close()

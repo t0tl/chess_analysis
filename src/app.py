@@ -44,10 +44,6 @@ df = df.assign(color = ["white", "white","white","white","white","white","white"
 df2 = df2.assign(color = ["black", "black", "black","black","black","black","black","black"])
 df = pd.concat([df, df2])
 
-# For the future, when hover over position should give
-# proportion of pieces who moved there
-# Can be implemented using multiple dfs.
-
 @app.callback(
     Output("graph", "figure"), 
     Input("color", "value"))

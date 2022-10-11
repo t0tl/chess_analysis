@@ -3,7 +3,7 @@ A repository collecting, analysing, and visualising Hans Niemanns chess games
 
 ### A 'Dash' of an Interactive Heatmap
 The plotly heatmap shows the likelihood of Hans moving any of his pieces to one the squares. One can further choose to segment on only his games as white or black.
-![](README_ASSETS\hans_niemann_square_frequency.png)
+![heatmap](https://github.com/t0tl/chess_analysis/blob/main/README_ASSETS/hans_niemann_square_frequency.png?raw=true)
 
 ## Getting started with the repo
 To use the repository, you need to have the an chess engine downloaded. For this project, I have used Stockfish 15 which can be downloaded from [Stockfish](https://stockfishchess.org/).
@@ -14,7 +14,7 @@ pip install chess psycopg2 pandas numpy
 ```
 You will also need to connect the program to a postgres database as it currently stands. To do that, make a file called `database.ini` and specify your credentials inside. 
 ```ini
-[postgres]
+[postgresql]
 host=HOST
 database=DB_NAME
 user=DB_USER

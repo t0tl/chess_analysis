@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc
 import psycopg2
 import pandas as pd
 import plotly.express as px
